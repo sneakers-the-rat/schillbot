@@ -19,28 +19,21 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+
+import pdb
 
 
 ###################
 # post
-# https://gist.github.com/fourtonfish/5ac885e5e13e6ca33dca9f8c2ef1c46e
+
 # load credentials
 with open('creds.json', 'r') as cf:
     creds = json.load(cf)
-#
-# # setup token
-# auth = tweepy.OAuthHandler(creds['CONSUMER_KEY'], creds['CONSUMER_SECRET'])
-# auth.set_access_token(creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
-# api = tweepy.API(auth)
-#
-# # post tweet
-# api.update_status(post.text[0])
 
 
 class URL:
     TWITTER = 'http://twitter.com'
-
-
 
 class Constants:
     USERNAME = creds['USER']
@@ -49,21 +42,22 @@ class Constants:
 
 
 class TwitterLocator:
-    username = (By.CLASS_NAME, "js-username-field")
-    password = (By.CLASS_NAME, "js-password-field")
-    submit_btn = (By.CLASS_NAME, "submit")
-    search_input = (By.ID, "search-query")
+    username         = (By.CLASS_NAME, "js-username-field")
+    password         = (By.CLASS_NAME, "js-password-field")
+    submit_btn       = (By.CLASS_NAME, "submit")
+    search_input     = (By.ID, "search-query")
     global_tweet_btn = (By.ID, "global-new-tweet-button")
-    tweet_btn = (By.CLASS_NAME, "js-tweet-btn")
-    tweet_box = (By.NAME, "tweet")
-    search_btn = (By.ID, "nav-search")
-    tweets = (By.CLASS_NAME, "js-stream-item")
-    login_btn = (By.CLASS_NAME, "StaticLoggedOutHomePage-buttonLogin")
-    like_btn = (By.CLASS_NAME, "HeartAnimation")
-    poll_btn = (By.CLASS_NAME, "PollCreator-btn")
-    option_one = (By.CLASS_NAME, "PollingCardComposer-option1")
-    option_two = (By.CLASS_NAME, "PollingCardComposer-option2")
-    latest_tweets = (By.PARTIAL_LINK_TEXT, 'Latest')
+    tweet_btn        = (By.XPATH, "//*[@data-testid='toolBar']//div[2]//div[3]")
+    outer_tweet_box  = (By.CLASS_NAME, 'public-DraftStyleDefault-block')
+    tweet_box        = (By.CLASS_NAME, "public-DraftEditor-content")
+    search_btn       = (By.ID, "nav-search")
+    tweets           = (By.CLASS_NAME, "js-stream-item")
+    login_btn        = (By.CLASS_NAME, "StaticLoggedOutHomePage-buttonLogin")
+    like_btn         = (By.CLASS_NAME, "HeartAnimation")
+    poll_btn         = (By.XPATH, '//div[@aria-label="Add poll"]')
+    option_one       = (By.NAME, 'Choice1')
+    option_two       = (By.NAME, 'Choice2')
+    latest_tweets    = (By.PARTIAL_LINK_TEXT, 'Latest')
 
 
 class PollBot(object):
@@ -71,10 +65,10 @@ class PollBot(object):
     def __init__(self):
         self.locator_dictionary = TwitterLocator.__dict__
         self.chrome_options = Options()
-        self.chrome_options.add_argument("--headless")
+        #self.chrome_options.add_argument("--headless")
         self.browser = webdriver.Chrome(chrome_options=self.chrome_options)  # export PATH=$PATH:/path/to/chromedriver/folder
         self.browser.get(URL.TWITTER)
-        self.timeout = 10
+        self.timeout = 2
 
     def login(self, username=Constants.USERNAME, password=Constants.PASSWORD):
         self.login_btn.click()
@@ -90,6 +84,32 @@ class PollBot(object):
         self.browser.find_elements_by_css_selector(".clearfix>.submit")[0].click()
         time.sleep(0.5)
 
+    def tweet_poll(self, post_text):
+
+        # click the tweet box
+        self.outer_tweet_box.click()
+        time.sleep(1)
+
+        # type the tweet
+        self.tweet_box.send_keys('\"' + post_text.lower() + '\" uohellno.com')
+        time.sleep(1)
+
+        # make the poll
+        self.poll_btn.click()
+        time.sleep(0.1)
+        self.option_one.click()
+        time.sleep(0.1)
+        self.option_one.send_keys('human schill')
+        time.sleep(0.1)
+        self.option_two.click()
+        time.sleep(0.1)
+        self.option_two.send_keys('robot schill')
+        time.sleep(0.2)
+
+        # send the tweet
+        self.tweet_btn.click()
+        time.sleep(2)
+
     def search(self, q=Constants.GLOBAL_ENTRY_Q):
         self.search_input.send_keys(q)
         self.search_input.send_keys(Keys.ENTER)
@@ -97,31 +117,7 @@ class PollBot(object):
     def view_latest_tweets(self):
         self.latest_tweets.click()
 
-    def tweet_poll(self, post_text):
-        #self.tweet_btn.click()
-        #time.sleep(1)
-        self.tweet_box.click()
-        time.sleep(1)
-        self.tweet_box.send_keys('\"' + post_text.lower() + '\" uohellno.com')
-        time.sleep(1)
-        self.poll_btn.click()
-        time.sleep(0.1)
-        self.option_one.click()
-        time.sleep(0.1)
-        self.option_one.find_element_by_class_name('PollingCardComposer-optionInput').send_keys('human schill')
-        time.sleep(0.1)
-        self.option_two.click()
-        time.sleep(0.1)
-        self.option_two.find_element_by_class_name('PollingCardComposer-optionInput').send_keys('robot schill')
-        time.sleep(0.1)
-        self.tweet_btn.click()
-        time.sleep(2)
-
     def like_tweet(self):
-        """
-        Like a random tweet
-        :return:
-        """
         tweets = self.browser.find_elements(*self.locator_dictionary['tweets'])
         tweet = random.choice(tweets)
         like = tweet.find_element(*self.locator_dictionary['like_btn'])
