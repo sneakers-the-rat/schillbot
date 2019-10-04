@@ -1,16 +1,12 @@
-import tweepy
-import twitter as tw
-import pandas as pd
-import numpy as np
-import json
 import logging
-import oauth2
-
 import os
 import random
 import time
 import traceback
 import json
+
+import pandas as pd
+import numpy as np
 
 from selenium import webdriver
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
@@ -19,9 +15,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains
 
 import pdb
+
+# thing to make work w cron
+#https://bugs.chromium.org/p/chromedriver/issues/detail?id=2470
+#os.environ["DISPLAY"]=":99"
 
 
 ###################
@@ -34,6 +33,7 @@ with open('creds.json', 'r') as cf:
 
 class URL:
     TWITTER = 'http://twitter.com'
+    TWITTER_HOME = 'https://twitter.com/home'
 
 class Constants:
     USERNAME = creds['USER']
@@ -42,21 +42,25 @@ class Constants:
 
 
 class TwitterLocator:
+    # login stuff
+    login_btn        = (By.CLASS_NAME, "StaticLoggedOutHomePage-buttonLogin")
     username         = (By.CLASS_NAME, "js-username-field")
     password         = (By.CLASS_NAME, "js-password-field")
-    submit_btn       = (By.CLASS_NAME, "submit")
-    search_input     = (By.ID, "search-query")
-    global_tweet_btn = (By.ID, "global-new-tweet-button")
-    tweet_btn        = (By.XPATH, "//*[@data-testid='toolBar']//div[2]//div[3]")
-    outer_tweet_box  = (By.CLASS_NAME, 'public-DraftStyleDefault-block')
+
+    # tweet stuff
+    #outer_tweet_box  = (By.CLASS_NAME, 'public-DraftStyleDefault-block')
+    outer_tweet_box  = (By.CLASS_NAME, 'DraftEditor-root')
     tweet_box        = (By.CLASS_NAME, "public-DraftEditor-content")
-    search_btn       = (By.ID, "nav-search")
-    tweets           = (By.CLASS_NAME, "js-stream-item")
-    login_btn        = (By.CLASS_NAME, "StaticLoggedOutHomePage-buttonLogin")
-    like_btn         = (By.CLASS_NAME, "HeartAnimation")
+    tweet_btn        = (By.XPATH, "//*[@data-testid='toolBar']//div[2]//div[3]")
+
+    # poll stuff
     poll_btn         = (By.XPATH, '//div[@aria-label="Add poll"]')
     option_one       = (By.NAME, 'Choice1')
     option_two       = (By.NAME, 'Choice2')
+
+    # etc.
+    search_input     = (By.ID, "search-query")
+    like_btn         = (By.CLASS_NAME, "HeartAnimation")
     latest_tweets    = (By.PARTIAL_LINK_TEXT, 'Latest')
 
 
@@ -64,9 +68,22 @@ class PollBot(object):
 
     def __init__(self):
         self.locator_dictionary = TwitterLocator.__dict__
-        self.chrome_options = Options()
-        #self.chrome_options.add_argument("--headless")
-        self.browser = webdriver.Chrome(chrome_options=self.chrome_options)  # export PATH=$PATH:/path/to/chromedriver/folder
+        self.options = Options()
+        self.options.binary_location = '/usr/bin/google-chrome'
+        #self.options.add_argument("start-maximized"); #// open Browser in maximized mode
+        self.options.add_argument("disable-infobars"); #// disabling infobars
+        #self.options.add_argument("--disable-extensions"); #// disabling extensions
+        #self.options.add_argument("--disable-gpu"); #// applicable to windows os only
+        self.options.add_argument("--disable-dev-shm-usage"); #// overcome limited resource problems
+        self.options.add_argument("--no-sandbox"); #// Bypass OS security model
+        self.options.add_argument("--headless")
+        # twitter's shit is too responsive and hides tweet box when window is small
+        self.options.add_argument("--window-size=1920,1080")
+        # debugging DevToolsActivePort file doesn't exist
+        #self.options.add_argument("--disable-gpu")
+
+
+        self.browser = webdriver.Chrome(options=self.options)  # export PATH=$PATH:/path/to/chromedriver/folder
         self.browser.get(URL.TWITTER)
         self.timeout = 2
 
@@ -82,6 +99,8 @@ class PollBot(object):
         self.password.send_keys(password)
         time.sleep(0.1)
         self.browser.find_elements_by_css_selector(".clearfix>.submit")[0].click()
+        time.sleep(0.5)
+        self.browser.get(URL.TWITTER_HOME)
         time.sleep(0.5)
 
     def tweet_poll(self, post_text):
@@ -172,13 +191,15 @@ if __name__ == "__main__":
     # find any new text
     with open('new_generated.txt', 'r') as genf:
         new_gen = [g.strip('\n') for g in genf.readlines()]
-        logger.info('loaded new generated quotes:\n\n{}'.format(new_gen))
+        if len(new_gen)>0:
+            logger.info('loaded new generated quotes:\n\n{}'.format(new_gen))
     # clear file
     open('new_generated.txt', 'w').close()
 
     with open('new_real.txt', 'r') as realf:
         new_real = [r.strip('\n') for r in realf.readlines()]
-        logger.info('loaded new generated quotes:\n\n{}'.format(new_real))
+        if len(new_real)>0:
+            logger.info('loaded new generated quotes:\n\n{}'.format(new_real))
     # clear file
     open('new_real.txt', 'w').close()
 
@@ -212,7 +233,8 @@ if __name__ == "__main__":
         return df.loc[df.n == df.n.min(),].sample(n=1)
 
 
-    PROP_REAL = 0.0  # proportion of real posts
+    #PROP_REAL = 0.0  # proportion of real posts
+    PROP_REAL = real.shape[0]/float(gen.shape[0]+real.shape[0])
 
     do_real = False
     if np.random.rand() < PROP_REAL:
