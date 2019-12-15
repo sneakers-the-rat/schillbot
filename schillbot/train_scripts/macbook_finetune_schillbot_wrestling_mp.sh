@@ -1,5 +1,4 @@
 t2t-trainer \
- --generate_data \
  --problem=schill_wrestling_mp \
  --t2t_usr_dir=/Users/jonny/git/schillbot/schillbot \
  --data_dir=/Users/jonny/Desktop/schillbot/data \

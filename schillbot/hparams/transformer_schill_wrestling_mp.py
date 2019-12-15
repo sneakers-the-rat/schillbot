@@ -31,6 +31,39 @@ def transformer_schill_wrestling_mp():
   return hparams
 
 @registry.register_hparams
+def colab_transformer_schill_wrestling_mp():
+  """Hparams for transformer on LM for pretraining/finetuning/mixing."""
+  hparams = transformer_base()
+  hparams.batch_size = 4096
+  hparams.hidden_size = 768
+  hparams.filter_size = 2048
+  hparams.num_hidden_layers = 8
+  hparams.num_heads = 8
+  hparams.label_smoothing = 0.0
+  hparams.max_length = 1024
+  hparams.eval_drop_long_sequences = True
+  hparams.multiproblem_vocab_size = 32000
+  hparams.clip_grad_norm = 1.0
+
+
+  # multiproblem
+  hparams.multiproblem_per_task_threshold = "14,1,1"
+  hparams.multiproblem_mixing_schedule = "constant"
+  #hparams.learning_rate_constant = 2e-2
+  hparams.weight_decay = 0.001 * hparams.learning_rate_constant
+  #hparams.learning_rate_schedule = ("linear_warmup*constant*cosdecay")
+  #hparams.learning_rate_warmup_steps = 10000
+  # one epoch for languagemodel_lm1b32k_packed = 27200 steps w/ bsize 128
+  #hparams.learning_rate_decay_steps = 400000
+  hparams.optimizer = "adam_w"
+  hparams.optimizer_adam_beta1 = 0.9
+  hparams.optimizer_adam_beta2 = 0.999
+  hparams.optimizer_adam_epsilon = 1e-8
+  #hparams.learning_rate_decay_steps = 500000
+
+  return hparams
+
+@registry.register_hparams
 def macbook_transformer_schill_wrestling_mp():
   """Hparams for transformer on LM for pretraining/finetuning/mixing."""
   hparams = transformer_base()
