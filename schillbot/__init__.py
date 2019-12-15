@@ -2,6 +2,7 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(__file__))
+sys.path.append('/Users/jonny/git/schillbot')
 
 from schillbot.problems import schill_words
 from schillbot.problems import schill_chars

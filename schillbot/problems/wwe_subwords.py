@@ -8,7 +8,12 @@ from tensor2tensor.utils import registry
 from tensor2tensor.data_generators.wiki_lm import LanguagemodelEnWiki32k
 import tensorflow as tf
 
+from schillbot.problems.schill_subwords_pretrained import SchillSubwordsPretrained
+
 import os
+
+from tensor2tensor.data_generators import multi_problem
+
 
 def concat_generator(filename, up_threshold, low_threshold=10):
   """Generate concatenated lines from file upto up_threshold characters."""
@@ -28,6 +33,9 @@ def concat_generator(filename, up_threshold, low_threshold=10):
       txt = " ".join([txt, line])
 
 
+
+
+
 class VocabType(object):
   """Available text vocabularies."""
   CHARACTER = "character"
@@ -36,12 +44,7 @@ class VocabType(object):
 
 
 @registry.register_problem
-class SchillSubwordsPretrained(text_problems.Text2SelfProblem):
-  """Predict next line of poetry from the last line. From Gutenberg texts."""
-
-  #@property
-  #def approx_vocab_size(self):
-  #  return 5000  # ~8k
+class WWESubwords(text_problems.Text2SelfProblem):
 
   @property
   def use_vocab_from_other_problem(self):
@@ -72,7 +75,7 @@ class SchillSubwordsPretrained(text_problems.Text2SelfProblem):
     # 10% evaluation data
     return [{
         "split": problem.DatasetSplit.TRAIN,
-        "shards": 9,
+        "shards": 20,
     }, {
         "split": problem.DatasetSplit.EVAL,
         "shards": 1,
@@ -81,20 +84,14 @@ class SchillSubwordsPretrained(text_problems.Text2SelfProblem):
   def generate_samples(self, data_dir, tmp_dir, dataset_split):
 
 
-    filename = os.path.join(data_dir, 'schill.txt')
+    filename = os.path.join(data_dir, 'wwe.txt')
 
     up_threshold = 512*8
     low_threshold= 10
 
 
     txt = ""
-    with tf.gfile.Open(filename) as txt_file:
-      try:
-        line = txt_file.next()
-      except StopIteration:
-        txt_file.seek(whence=0)
-        line = txt_file.next()
-
+    for line in tf.gfile.Open(filename):
       line = line.strip()
       if len(txt) + len(line) + 1 >= up_threshold:
         ret = txt
@@ -107,7 +104,3 @@ class SchillSubwordsPretrained(text_problems.Text2SelfProblem):
         txt = line
       else:
         txt = " ".join([txt, line])
-
-
-
-
