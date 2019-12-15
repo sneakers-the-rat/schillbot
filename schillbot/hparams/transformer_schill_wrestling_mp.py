@@ -50,7 +50,7 @@ def colab_transformer_schill_wrestling_mp():
   hparams.multiproblem_per_task_threshold = "14,1,1"
   hparams.multiproblem_mixing_schedule = "constant"
   #hparams.learning_rate_constant = 2e-2
-  hparams.weight_decay = 0.001 * hparams.learning_rate_constant
+  hparams.weight_decay = 1e-6
   #hparams.learning_rate_schedule = ("linear_warmup*constant*cosdecay")
   #hparams.learning_rate_warmup_steps = 10000
   # one epoch for languagemodel_lm1b32k_packed = 27200 steps w/ bsize 128
