@@ -8,8 +8,8 @@ from tensor2tensor.utils import registry
 from tensor2tensor.data_generators.wiki_lm import LanguagemodelEnWiki32k
 import tensorflow as tf
 
-from schillbot.schill_subwords_pretrained import SchillSubwordsPretrained
-from schillbot.wwe_subwords import WWESubwords
+from schillbot.problems.schill_subwords_pretrained import SchillSubwordsPretrained
+from schillbot.problems.wwe_subwords import WWESubwords
 
 import os
 

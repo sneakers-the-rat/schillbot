@@ -8,7 +8,7 @@ from tensor2tensor.utils import registry
 from tensor2tensor.data_generators.wiki_lm import LanguagemodelEnWiki32k
 import tensorflow as tf
 
-from schillbot.schill_subwords_pretrained import SchillSubwordsPretrained
+from schillbot.problems.schill_subwords_pretrained import SchillSubwordsPretrained
 
 import os
 
