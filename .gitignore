@@ -3,3 +3,8 @@
 
 env/
 *.pyc
+
+creds.json
+env
+
+schillbot_log.txt

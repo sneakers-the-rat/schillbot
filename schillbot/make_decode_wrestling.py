@@ -11,7 +11,7 @@ wwe_fn = "data/wwe.txt"
 
 
 #schill_fn = "/mnt/data/schillbot_pt/spooky.txt"
-decode_out = "data/decode_sample.txt"
+decode_out = "/mnt/data/schillbot_wrestling_bw/decode_sample.txt"
 
 
 low_threshold=10

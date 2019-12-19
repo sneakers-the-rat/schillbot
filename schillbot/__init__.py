@@ -11,6 +11,10 @@ from schillbot.problems import schill_subwords_mp
 from schillbot.problems import wwe_subwords
 from schillbot.problems import schill_wrestling_mp
 
+from schillbot.problems import schill_wrestling_mp_bw
+from schillbot.problems import wwe_subwords_bw
+from schillbot.problems import schill_subwords_bw
+
 from schillbot.hparams import transformer_schill
 from schillbot.hparams import transformer_schill_ft
 from schillbot.hparams import transformer_schill_mp
