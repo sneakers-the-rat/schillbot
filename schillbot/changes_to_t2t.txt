@@ -1,0 +1,18 @@
+# remove lambda argument from multiproblem.py at end of file's loss() call
+
+https://github.com/tensorflow/tensor2tensor/issues/1223#issuecomment-438456331
+to use schedule=train_eval_and_decode, change 735 of transformer.py to:
+  if partial_targets is None:
+    if 'targets' in features:
+      partial_targets = features.get("targets")
+    else:
+      partial_targets = features.get('infer_targets')
+
+and in utils/t2t_model.py, line 1717
+
+    inputs = features.get("inputs")
+    if inputs is None:
+      if 'targets' in features:
+        inputs = features.get("targets")
+      else:
+        inputs = features.get('infer_targets')

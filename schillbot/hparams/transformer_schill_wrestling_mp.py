@@ -69,8 +69,8 @@ def transformer_schill_wrestling_bw_big():
   hparams.learning_rate_decay_steps = 1000000
 
   hparams.batch_size = 2048
-  hparams.hidden_size = 768
-  #hparams.filter_size = 2048
+  hparams.hidden_size = 1024
+  hparams.filter_size = 4096
   #hparams.num_encoder_layers = 4
   #hparams.num_decoder_layers = 5
   #hparams.layer_prepostprocess_dropout = 0.3
@@ -92,6 +92,8 @@ def transformer_schill_wrestling_bw_big():
   #hparams.optimizer_adam_beta1 = 0.9
   #hparams.optimizer_adam_beta2 = 0.99
   #hparams.optimizer_adam_epsilon = 1e-8
+
+
   return hparams
 
 @registry.register_hparams
